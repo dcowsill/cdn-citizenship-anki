@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Fetched ground-truth text (regenerate with: python fetch_sources.py)
+sources/
