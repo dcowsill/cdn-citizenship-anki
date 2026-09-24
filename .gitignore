@@ -5,3 +5,6 @@ venv/
 
 # Fetched ground-truth text (regenerate with: python fetch_sources.py)
 sources/
+
+# Built deck (regenerate with: python build_deck.py)
+dist/

@@ -34,7 +34,13 @@ GUIDE_BASE = ("https://www.canada.ca/en/immigration-refugees-citizenship/"
 TEST_BASE = ("https://www.canada.ca/en/immigration-refugees-citizenship/"
              "services/canadian-citizenship/test")
 
-# The 18 chapters, in the order they appear in the guide.
+# The 18 chapters, in the order they appear in the guide, plus the two sub-pages
+# hanging off the government chapter. Those two carry text that exists nowhere
+# else: canadas-system-government is the text version of the "Canada's System of
+# Government" chart (the only place the guide states that the Supreme Court has
+# nine judges, and which branch the PM and Cabinet sit in), and the -images page
+# holds that chapter's photo captions. Both are linked only from the government
+# chapter's pagination, which is why they were missed at first.
 GUIDE_PAGES = [
     "notice",
     "message-readers",
@@ -45,6 +51,8 @@ GUIDE_PAGES = [
     "canadas-history",
     "modern-canada",
     "how-canadians-govern-themselves",
+    "how-canadians-govern-themselves-images",
+    "canadas-system-government",
     "federal-elections",
     "justice-system",
     "canadian-symbols",

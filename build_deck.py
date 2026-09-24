@@ -3,13 +3,14 @@
 """
 Build "Canadian Citizenship Exam Prep.apkg" from cards.py using genanki.
 
-Usage:  python build_deck.py [output.apkg]
+Usage:  python build_deck.py [output.apkg]     (default: dist/Canadian Citizenship Exam Prep.apkg)
 """
 
+import os
 import sys
 import genanki
 
-from cards import CHAPTERS, CARDS
+from cards import CHAPTERS, CARDS, LOW_YIELD
 
 DECK_ID = 1789070101      # stable, arbitrary
 MODEL_ID = 1789070102
@@ -61,8 +62,21 @@ MODEL = genanki.Model(
 def build(out_path):
     deck = genanki.Deck(DECK_ID, DECK_NAME)
 
+    # LOW_YIELD is keyed on exact question text, so a reworded question would
+    # silently stop being tagged. Fail loudly instead of shipping a deck whose
+    # yield::low tags have quietly drifted out of sync with the cards.
+    all_questions = {e[0] for entries in CARDS.values() for e in entries}
+    orphans = sorted(LOW_YIELD - all_questions)
+    if orphans:
+        raise SystemExit(
+            "LOW_YIELD contains %d question(s) that match no card - a question "
+            "was reworded or removed. Fix cards.py:\n  %s"
+            % (len(orphans), "\n  ".join(orphans))
+        )
+
     per_chapter = {}
     flagged = []
+    low_yield_count = 0
     total = 0
 
     for tag, title in CHAPTERS:
@@ -74,6 +88,10 @@ def build(out_path):
             note_text = entry[2] if len(entry) > 2 else None
 
             tags = ["chapter::" + tag]
+            is_low_yield = question in LOW_YIELD
+            if is_low_yield:
+                tags.append("yield::low")
+                low_yield_count += 1
             if note_text:
                 answer = (
                     answer
@@ -84,18 +102,30 @@ def build(out_path):
                 tags.append("flagged::verify")
                 flagged.append((tag, question, note_text))
 
-            deck.add_note(
-                genanki.Note(model=MODEL, fields=[question, answer], tags=tags)
-            )
+            note = genanki.Note(model=MODEL, fields=[question, answer], tags=tags)
+
+            # Ship the low-yield cards already suspended (genanki writes
+            # queue = -1), so a fresh import starts on the 313-card core
+            # without anyone having to run a Browse query first. The
+            # yield::low tag is kept so they can be brought back with
+            # Browse -> tag:yield::low -> Unsuspend.
+            if is_low_yield:
+                for card in note.cards:
+                    card.suspend = True
+
+            deck.add_note(note)
             total += 1
 
+    out_dir = os.path.dirname(out_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
     genanki.Package(deck).write_to_file(out_path)
-    return total, per_chapter, flagged
+    return total, per_chapter, flagged, low_yield_count
 
 
 def main():
-    out = sys.argv[1] if len(sys.argv) > 1 else "Canadian Citizenship Exam Prep.apkg"
-    total, per_chapter, flagged = build(out)
+    out = sys.argv[1] if len(sys.argv) > 1 else "dist/Canadian Citizenship Exam Prep.apkg"
+    total, per_chapter, flagged, low_yield_count = build(out)
 
     print("Wrote: %s" % out)
     print("Deck name: %s" % DECK_NAME)
@@ -108,6 +138,10 @@ def main():
         print("  %-4d  %-44s %s" % (n, title_, "chapter::" + tag))
     print("-" * 62)
     print("  %-4d  TOTAL" % total)
+
+    print("\nCards shipped SUSPENDED (tag yield::low): %d" % low_yield_count)
+    print("Cards active on import:                   %d" % (total - low_yield_count))
+    print("  Bring them back with:  Browse -> tag:yield::low -> Unsuspend")
 
     print("\nCards tagged flagged::verify: %d" % len(flagged))
     for tag, q, note in flagged:
