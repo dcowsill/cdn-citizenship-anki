@@ -9,12 +9,15 @@ written from memory.
 
 ## Getting the deck
 
-The `.apkg` is a build artifact, not something committed to this repo — build
-it yourself (see [Rebuilding](#rebuilding) below), then copy
-`dist/Canadian Citizenship Exam Prep.apkg` to your device and open it with
-AnkiDroid (or File → Import in desktop Anki). It creates one deck,
-**Canadian Citizenship Exam Prep**, with a `Citizenship Q/A` note type
-(Question / Answer fields).
+**[⬇ Download the latest `.apkg`](https://github.com/dcowsill/cdn-citizenship-anki/releases/latest/download/Canadian.Citizenship.Exam.Prep.apkg)**
+— from the [Releases page](https://github.com/dcowsill/cdn-citizenship-anki/releases).
+Copy it to your device and open it with AnkiDroid (or File → Import in desktop
+Anki). It creates one deck, **Canadian Citizenship Exam Prep**, with a
+`Citizenship Q/A` note type (Question / Answer fields).
+
+The `.apkg` isn't committed to this repo — it's a build artifact attached to
+each release. To build it yourself instead, see [Rebuilding](#rebuilding)
+below.
 
 ## Exam format (verified from IRCC, page updated 2026‑03‑31)
 
